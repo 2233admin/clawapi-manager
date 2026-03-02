@@ -1,7 +1,7 @@
 ---
 name: clawapi-manager
 slug: clawapi-manager
-version: 1.1.1
+version: 1.1.2
 author: 2233admin
 description: OpenClaw API management and cost optimization. Manages multi-provider keys, monitors costs, routes tasks intelligently, and provides automated failover. Use when managing API keys, tracking costs, or optimizing API spending. Triggers: "api key", "cost", "budget", "provider", "validate config", "fix config".
 ---
