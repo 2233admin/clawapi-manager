@@ -364,6 +364,82 @@ class ClawAPIConfigManager:
                 print(f"    - {issue}")
         
         print()
+# ========== Channel 管理 ==========
+    
+    def list_channels(self) -> List[Dict]:
+        """列出所有 channels"""
+        config = self._load_config()
+        channels = config.get('channels', {})
+        
+        result = []
+        for name, channel_config in channels.items():
+            result.append({
+                'name': name,
+                'type': channel_config.get('type', 'unknown'),
+                'enabled': channel_config.get('enabled', False),
+                'config': 'Configured' if channel_config else 'Not configured'
+            })
+        
+        return result
+    
+    def add_channel(self, name: str, channel_type: str, config_data: Dict):
+        """添加 channel"""
+        config = self._load_config()
+        
+        if 'channels' not in config:
+            config['channels'] = {}
+        
+        if name in config['channels']:
+            raise ValueError(f"Channel '{name}' already exists")
+        
+        config['channels'][name] = {
+            'type': channel_type,
+            'enabled': True,
+            **config_data
+        }
+        
+        self._save_config(config)
+        return True
+    
+    def update_channel(self, name: str, updates: Dict):
+        """更新 channel 配置"""
+        config = self._load_config()
+        channels = config.get('channels', {})
+        
+        if name not in channels:
+            raise ValueError(f"Channel '{name}' not found")
+        
+        channels[name].update(updates)
+        self._save_config(config)
+        return True
+    
+    def remove_channel(self, name: str):
+        """删除 channel"""
+        config = self._load_config()
+        channels = config.get('channels', {})
+        
+        if name not in channels:
+            raise ValueError(f"Channel '{name}' not found")
+        
+        del channels[name]
+        self._save_config(config)
+        return True
+    
+    def toggle_channel(self, name: str):
+        """切换 channel 启用状态"""
+        config = self._load_config()
+        channels = config.get('channels', {})
+        
+        if name not in channels:
+            raise ValueError(f"Channel '{name}' not found")
+        
+        current = channels[name].get('enabled', False)
+        channels[name]['enabled'] = not current
+        
+        self._save_config(config)
+        return not current
+
+
 
 
 def main():
@@ -491,3 +567,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    

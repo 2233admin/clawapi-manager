@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """
-ClawAPI Manager TUI - 配置管理面板
-三个模块：Models、Channels、Skills
+ClawAPI Manager TUI - 完整版
+基于 Textual 的配置管理面板
 """
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Header, Footer, Button, Static, TabbedContent, TabPane, DataTable, Input, Label
+from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
+from textual.widgets import (
+    Header, Footer, Button, Static, TabbedContent, TabPane, 
+    DataTable, Input, Label, Select, Switch
+)
 from textual.binding import Binding
+from textual.screen import ModalScreen
 import sys
 import os
 
@@ -15,6 +19,75 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'lib'))
 
 from config_manager import ClawAPIConfigManager
+
+
+class AddProviderScreen(ModalScreen):
+    """添加 Provider 对话框"""
+    
+    def compose(self) -> ComposeResult:
+        with Container(id="dialog"):
+            yield Label("Add Provider", id="dialog-title")
+            yield Input(placeholder="Provider name", id="provider-name")
+            yield Input(placeholder="Base URL", id="provider-url")
+            yield Input(placeholder="API Key", password=True, id="provider-key")
+            with Horizontal(classes="button-row"):
+                yield Button("Add", variant="primary", id="add-btn")
+                yield Button("Cancel", id="cancel-btn")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "add-btn":
+            name = self.query_one("#provider-name", Input).value
+            url = self.query_one("#provider-url", Input).value
+            key = self.query_one("#provider-key", Input).value
+            
+            if name and url and key:
+                self.dismiss((name, url, key))
+            else:
+                self.app.notify("All fields required!", severity="error")
+        else:
+            self.dismiss(None)
+
+
+class AddChannelScreen(ModalScreen):
+    """添加 Channel 对话框"""
+    
+    CHANNEL_TYPES = [
+        ("QQ Bot", "qqbot"),
+        ("WeChat Work", "wecom"),
+        ("Feishu", "feishu"),
+        ("DingTalk", "dingtalk"),
+        ("Telegram", "telegram"),
+        ("Discord", "discord"),
+        ("Slack", "slack"),
+    ]
+    
+    def compose(self) -> ComposeResult:
+        with Container(id="dialog"):
+            yield Label("Add Channel", id="dialog-title")
+            yield Input(placeholder="Channel name", id="channel-name")
+            yield Select(
+                options=[(name, value) for name, value in self.CHANNEL_TYPES],
+                prompt="Select channel type",
+                id="channel-type"
+            )
+            yield Input(placeholder="App ID / Bot Token", id="channel-token")
+            with Horizontal(classes="button-row"):
+                yield Button("Add", variant="primary", id="add-btn")
+                yield Button("Cancel", id="cancel-btn")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "add-btn":
+            name = self.query_one("#channel-name", Input).value
+            channel_type = self.query_one("#channel-type", Select).value
+            token = self.query_one("#channel-token", Input).value
+            
+            if name and channel_type and token:
+                self.dismiss((name, channel_type, token))
+            else:
+                self.app.notify("All fields required!", severity="error")
+        else:
+            self.dismiss(None)
+
 
 class ClawAPITUI(App):
     """ClawAPI Manager TUI"""
@@ -44,11 +117,31 @@ class ClawAPITUI(App):
     Button {
         margin: 0 1;
     }
+    
+    #dialog {
+        width: 60;
+        height: auto;
+        border: thick $primary;
+        background: $surface;
+        padding: 1;
+    }
+    
+    #dialog-title {
+        text-align: center;
+        text-style: bold;
+        color: $primary;
+        margin-bottom: 1;
+    }
+    
+    Input {
+        margin: 1 0;
+    }
     """
     
     BINDINGS = [
         Binding("q", "quit", "Quit"),
         Binding("r", "refresh", "Refresh"),
+        Binding("ctrl+s", "save", "Save"),
     ]
     
     def __init__(self):
@@ -66,29 +159,28 @@ class ClawAPITUI(App):
         with TabbedContent():
             # Models 标签页
             with TabPane("Models", id="models-tab"):
-                yield DataTable(id="models-table")
+                yield DataTable(id="models-table", cursor_type="row")
                 with Horizontal(classes="button-row"):
                     yield Button("Add Provider", id="add-provider", variant="primary")
-                    yield Button("Add Model", id="add-model")
                     yield Button("Set Primary", id="set-primary")
+                    yield Button("Add Fallback", id="add-fallback")
                     yield Button("Test", id="test-provider")
             
             # Channels 标签页
             with TabPane("Channels", id="channels-tab"):
-                yield DataTable(id="channels-table")
+                yield DataTable(id="channels-table", cursor_type="row")
                 with Horizontal(classes="button-row"):
                     yield Button("Add Channel", id="add-channel", variant="primary")
-                    yield Button("Edit", id="edit-channel")
-                    yield Button("Remove", id="remove-channel")
-                    yield Button("Test", id="test-channel")
+                    yield Button("Toggle", id="toggle-channel")
+                    yield Button("Remove", id="remove-channel", variant="error")
             
             # Skills 标签页
             with TabPane("Skills", id="skills-tab"):
-                yield DataTable(id="skills-table")
+                yield DataTable(id="skills-table", cursor_type="row")
                 with Horizontal(classes="button-row"):
                     yield Button("Install", id="install-skill", variant="primary")
                     yield Button("Update", id="update-skill")
-                    yield Button("Remove", id="remove-skill")
+                    yield Button("Remove", id="remove-skill", variant="error")
         
         yield Footer()
     
@@ -133,25 +225,18 @@ class ClawAPITUI(App):
         # 添加列
         table.add_columns("Channel", "Type", "Status", "Config")
         
-        # 读取 channels 配置
-        config = self.manager._load_config()
-        channels = config.get('channels', {})
-        
         # 添加数据
-        for name, channel_config in channels.items():
-            enabled = channel_config.get('enabled', False)
-            channel_type = channel_config.get('type', 'unknown')
-            
-            table.add_row(
-                name,
-                channel_type,
-                "✅ Enabled" if enabled else "❌ Disabled",
-                "Configured"
-            )
-        
-        # 如果没有 channels，显示提示
-        if not channels:
-            table.add_row("(No channels configured)", "", "", "")
+        channels = self.manager.list_channels()
+        if channels:
+            for channel in channels:
+                table.add_row(
+                    channel['name'],
+                    channel['type'],
+                    "✅ Enabled" if channel['enabled'] else "❌ Disabled",
+                    channel['config']
+                )
+        else:
+            table.add_row("(No channels)", "", "", "")
     
     def load_skills(self):
         """加载 Skills 数据"""
@@ -172,14 +257,13 @@ class ClawAPITUI(App):
             )
             
             if result.returncode == 0:
-                # 解析输出
                 for line in result.stdout.split('\n'):
                     if line.strip() and not line.startswith('─'):
                         parts = line.split()
                         if len(parts) >= 2:
-                            table.add_row(parts[0], parts[1] if len(parts) > 1 else "?", "✅", "ClawHub")
+                            table.add_row(parts[0], parts[1], "✅", "ClawHub")
             else:
-                table.add_row("(Run 'clawhub list' to see skills)", "", "", "")
+                table.add_row("(Run 'clawhub list')", "", "", "")
         except:
             table.add_row("(clawhub not available)", "", "", "")
     
@@ -191,21 +275,50 @@ class ClawAPITUI(App):
         self.load_skills()
         self.notify("Refreshed")
     
-    def on_button_pressed(self, event: Button.Pressed) -> None:
+    def action_save(self):
+        """保存配置"""
+        self.notify("Configuration auto-saved")
+    
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
         """按钮点击事件"""
         button_id = event.button.id
         
+        # Models 操作
         if button_id == "add-provider":
-            self.notify("Add Provider: Use CLI - ./clawapi add-provider <name> <url> <key>")
-        
-        elif button_id == "add-model":
-            self.notify("Add Model: Use CLI - ./clawapi add-model <provider> <id> <name>")
+            result = await self.push_screen_wait(AddProviderScreen())
+            if result:
+                name, url, key = result
+                try:
+                    self.manager.add_provider(name, url, key)
+                    self.load_models()
+                    self.update_status()
+                    self.notify(f"✅ Provider '{name}' added")
+                except Exception as e:
+                    self.notify(f"❌ Error: {e}", severity="error")
         
         elif button_id == "set-primary":
-            self.notify("Set Primary: Use CLI - ./clawapi set-primary <model_id>")
+            table = self.query_one("#models-table", DataTable)
+            if table.cursor_row < len(table.rows):
+                provider_name = table.get_row_at(table.cursor_row)[0]
+                models = self.manager.list_models(provider_name)
+                if models:
+                    model_id = models[0]['full_id']
+                    self.manager.set_primary_model(model_id)
+                    self.update_status()
+                    self.notify(f"✅ Primary set to {model_id}")
+        
+        elif button_id == "add-fallback":
+            table = self.query_one("#models-table", DataTable)
+            if table.cursor_row < len(table.rows):
+                provider_name = table.get_row_at(table.cursor_row)[0]
+                models = self.manager.list_models(provider_name)
+                if models:
+                    model_id = models[0]['full_id']
+                    self.manager.add_fallback(model_id)
+                    self.update_status()
+                    self.notify(f"✅ Added {model_id} to fallbacks")
         
         elif button_id == "test-provider":
-            # 获取选中的 provider
             table = self.query_one("#models-table", DataTable)
             if table.cursor_row < len(table.rows):
                 provider_name = table.get_row_at(table.cursor_row)[0]
@@ -214,30 +327,56 @@ class ClawAPITUI(App):
                     if result['success']:
                         self.notify(f"✅ {provider_name} OK")
                     else:
-                        self.notify(f"❌ {provider_name} Failed: {result.get('error', 'Unknown')}")
+                        self.notify(f"❌ {provider_name} Failed", severity="error")
                 except Exception as e:
-                    self.notify(f"❌ Error: {e}")
+                    self.notify(f"❌ Error: {e}", severity="error")
         
+        # Channels 操作
         elif button_id == "add-channel":
-            self.notify("Add Channel: Edit openclaw.json manually or use CLI")
+            result = await self.push_screen_wait(AddChannelScreen())
+            if result:
+                name, channel_type, token = result
+                try:
+                    self.manager.add_channel(name, channel_type, {'token': token})
+                    self.load_channels()
+                    self.notify(f"✅ Channel '{name}' added")
+                except Exception as e:
+                    self.notify(f"❌ Error: {e}", severity="error")
         
-        elif button_id == "edit-channel":
-            self.notify("Edit Channel: Edit openclaw.json manually")
+        elif button_id == "toggle-channel":
+            table = self.query_one("#channels-table", DataTable)
+            if table.cursor_row < len(table.rows):
+                channel_name = table.get_row_at(table.cursor_row)[0]
+                if channel_name != "(No channels)":
+                    try:
+                        new_state = self.manager.toggle_channel(channel_name)
+                        self.load_channels()
+                        state_text = "enabled" if new_state else "disabled"
+                        self.notify(f"✅ {channel_name} {state_text}")
+                    except Exception as e:
+                        self.notify(f"❌ Error: {e}", severity="error")
         
         elif button_id == "remove-channel":
-            self.notify("Remove Channel: Edit openclaw.json manually")
+            table = self.query_one("#channels-table", DataTable)
+            if table.cursor_row < len(table.rows):
+                channel_name = table.get_row_at(table.cursor_row)[0]
+                if channel_name != "(No channels)":
+                    try:
+                        self.manager.remove_channel(channel_name)
+                        self.load_channels()
+                        self.notify(f"✅ Channel '{channel_name}' removed")
+                    except Exception as e:
+                        self.notify(f"❌ Error: {e}", severity="error")
         
-        elif button_id == "test-channel":
-            self.notify("Test Channel: Not implemented yet")
-        
+        # Skills 操作
         elif button_id == "install-skill":
-            self.notify("Install Skill: Use 'clawhub install <skill-name>'")
+            self.notify("Use: clawhub install <skill-name>")
         
         elif button_id == "update-skill":
-            self.notify("Update Skill: Use 'clawhub update <skill-name>'")
+            self.notify("Use: clawhub update <skill-name>")
         
         elif button_id == "remove-skill":
-            self.notify("Remove Skill: Use 'clawhub remove <skill-name>'")
+            self.notify("Use: clawhub remove <skill-name>")
 
 
 def main():
