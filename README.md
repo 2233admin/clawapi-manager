@@ -150,3 +150,37 @@ MIT License - Free for personal and commercial use.
 
 **Version**: 1.0.1  
 **Last Updated**: 2026-03-02
+
+## 模型切换（新功能）
+
+集成自 openclaw-switch，提供安全的模型切换功能。
+
+### 查看当前模型
+
+```bash
+python3 lib/model_switcher.py status
+```
+
+### 列出所有模型
+
+```bash
+python3 lib/model_switcher.py list
+```
+
+### 切换模型
+
+```bash
+# 通过编号切换
+python3 lib/model_switcher.py switch 6
+
+# 或通过模型 ID
+python3 lib/model_switcher.py switch minimax/MiniMax-M2.5
+```
+
+### 特性
+
+- ✅ 安全的 JSON 修改（防止格式错误）
+- ✅ 显示 Fallback 链
+- ✅ 自动重启 daemon
+- ✅ 支持编号和 ID 两种方式
+
