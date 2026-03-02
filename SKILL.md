@@ -1,366 +1,231 @@
 ---
-name: ClawAPI Manager
+name: clawapi-manager
 slug: clawapi-manager
 version: 1.1.1
 author: 2233admin
-description: OpenClaw-native API management and cost optimization. Multi-provider key management, real-time monitoring, smart routing, and automated failover.
-tags:
-  - api-management
-  - cost-optimization
-  - monitoring
-  - key-rotation
-  - multi-provider
+description: OpenClaw API management and cost optimization. Manages multi-provider keys, monitors costs, routes tasks intelligently, and provides automated failover. Use when managing API keys, tracking costs, or optimizing API spending. Triggers: "api key", "cost", "budget", "provider", "validate config", "fix config".
 ---
 
 # ClawAPI Manager
 
-An OpenClaw-native API management and cost optimization skill. Provides comprehensive API key management, real-time monitoring, smart routing, and cost savings through OpenRouter integration.
+> 🔧 Professional API management and cost optimization for OpenClaw deployments
 
-## Overview
+[English](#english) | [中文](#中文)
 
-ClawAPI Manager is an all-in-one solution for managing API keys, monitoring usage, and optimizing costs for OpenClaw deployments. It integrates monitoring, alerting, key rotation, and intelligent task routing into a unified management system.
+---
 
-**Target Users:** OpenClaw administrators, DevOps engineers, and developers managing multi-node AI agent deployments.
+## English
 
-## Features
+### Overview
 
-### 1. API Key Management
-- **Multi-Provider Support**: Manage keys for multiple API providers (OpenAI, Anthropic, Google, etc.)
-- **Key Pool Management**: Rotate between multiple keys automatically
+ClawAPI Manager is an OpenClaw-native tool for managing API keys, monitoring costs, and optimizing API spending through intelligent routing. It saves 30-90% on API costs by automatically routing simple tasks to free models.
+
+### Capabilities
+
+- **Multi-Provider Management**: Manage keys for OpenAI, Anthropic, Google, and 40+ providers
+- **Cost Tracking**: Real-time monitoring of API usage and spending
+- **Smart Routing**: Automatically route tasks to cost-effective models
 - **Key Health Monitoring**: Detect expired, rate-limited, or invalid keys
-- **Encryption**: AES-256 encryption for sensitive key storage
+- **Config Validation**: Detect and auto-fix configuration issues
+- **Budget Alerts**: Multi-channel notifications (Telegram, Discord, Slack, Feishu, QQ)
+- **Automated Failover**: Round-robin key rotation with health checks
 
-### 2. Real-Time Monitoring
-- **Gateway Status**: Monitor OpenClaw Gateway connectivity and health
-- **Cost Tracking**: Track API usage by model, provider, and time period
-- **Quota Monitoring**: Monitor remaining quotas and rate limits
-- **Session Analytics**: Analyze token consumption per session
+### How to Use
 
-### 3. Smart Routing (Cost Optimization)
-- **Task Complexity Analysis**: Automatically classify tasks as simple/medium/complex
-- **OpenRouter Integration**: Route simple tasks to free models (Qwen, Llama, etc.)
-- **Priority-Based Switching**: Configure fallback model priority chains
-- **Manual Override**: Force switch to specific models when needed
-
-### 4. Alerting & Reporting
-- **Multi-Channel Notifications**: Telegram, Discord, Slack, Feishu, QQ, DingTalk
-- **Budget Alerts**: Daily/monthly budget threshold warnings
-- **Daily Reports**: Automated cost reports via cron
-- **Key Failure Detection**: Automatic 401/403/429 error detection
-
-### 5. Fault Tolerance
-- **Circuit Breaker**: Automatic failure detection and recovery
-- **Bypass Mode**: Continue operations even if monitoring fails
-- **File Locking**: Prevent concurrent modifications
-
-## Architecture
-
-```
-ClawAPI Manager
-├── lib/                    # Core Python modules
-│   ├── cost_monitor.py     # Cost tracking
-│   ├── cost_predictor.py  # Cost prediction
-│   ├── circuit_breaker.py # Fault tolerance
-│   ├── session_quota.py   # Session quotas
-│   ├── smart_router.py    # Provider routing
-│   ├── notifier.py        # Multi-channel alerts
-│   ├── daily_report.py    # Report generation
-│   ├── budget_alert.py    # Budget monitoring
-│   ├── key_health.py      # Key health checks
-│   └── task_delegation.py # OpenRouter delegation
-├── config/                # Configuration files
-├── data/                   # Runtime data storage
-├── logs/                   # Log files
-└── scripts/               # Shell automation scripts
-```
-
-## Installation
+#### 1. Installation
 
 ```bash
-# Clone or download to your OpenClaw skills directory
 cd ~/.openclaw/workspace/skills
-git clone https://github.com/your-repo/clawapi-manager.git
-
-# Install dependencies
+git clone https://github.com/2233admin/clawapi-manager.git
 cd clawapi-manager
 pip install -r requirements.txt
-
-# Configure notification channels
-cp config/notify.json.example config/notify.json
-# Edit with your webhook URLs
 ```
 
-## Configuration
-
-### Notification Channels
-
-Edit `config/notify.json`:
-
-```json
-{
-  "telegram": {
-    "enabled": true,
-    "bot_token": "YOUR_BOT_TOKEN",
-    "chat_id": "YOUR_CHAT_ID"
-  },
-  "discord": {
-    "enabled": false,
-    "webhook_url": "https://discord.com/api/webhooks/..."
-  }
-}
-```
-
-### Model Priority
-
-Configure default model and priority chain:
+#### 2. Basic Commands
 
 ```bash
-python3 lib/model_router.py set minimax/MiniMax-M2.5
-python3 lib/model_router.py priority minimax/MiniMax-M2.5 volcengine aiclauder
+# List all providers
+python3 claw_api_manager_central.py list
+
+# Validate configuration
+python3 claw_api_manager_central.py validate
+
+# Auto-fix configuration issues
+python3 claw_api_manager_central.py fix
+
+# Update API key
+python3 claw_api_manager_central.py update provider-name new-key
+
+# Add new provider
+python3 claw_api_manager_central.py add provider-name https://api.example.com sk-key anthropic-messages
 ```
 
-### OpenRouter Setup (Optional)
-
-For cost optimization, add your OpenRouter key to `config/openrouter.json`:
-
-```json
-{
-  "api_key": "sk-or-v1-..."
-}
-```
-
-## Usage
-
-### Basic Commands
+#### 3. Configuration
 
 ```bash
-# Health check
-python3 lib/cost_monitor.py health
+# Create example configs
+cp config/managed_keys_central.json.example config/managed_keys_central.json
+cp config/openrouter_keys.json.example config/openrouter_keys.json
 
-# Cost report
-python3 lib/daily_report.py
-
-# Check key health
-python3 lib/key_health.py status
-
-# Budget alert check
-python3 lib/budget_alert.py check
+# Edit with your keys
+nano config/managed_keys_central.json
 ```
 
-### Smart Routing
+### Example Usage
+
+**Scenario 1: Validate Configuration**
+```
+User: "Check if my OpenClaw config is valid"
+Assistant: [Runs validate command, reports issues]
+```
+
+**Scenario 2: Auto-Fix Issues**
+```
+User: "Fix my config errors"
+Assistant: [Runs fix command, repairs common issues]
+```
+
+**Scenario 3: Add OpenRouter Key**
+```
+User: "Add this OpenRouter key: sk-or-v1-xxx"
+Assistant: [Adds key, configures rotation]
+```
+
+### Scripts
+
+- `claw_api_manager_central.py`: Main management CLI
+- `lib/config_manager.py`: Configuration management core
+- `lib/key_rotation.py`: Automated key rotation
+- `lib/cost_monitor.py`: Cost tracking and reporting
+- `lib/smart_router.py`: Intelligent task routing
+
+### Limitations
+
+- Requires Python 3.8+
+- Only supports OpenClaw deployments
+- Config validation covers common issues only
+- Smart routing requires OpenRouter integration
+
+### Troubleshooting
+
+**Issue: "Unknown model" error**
+- Run: `python3 claw_api_manager_central.py validate`
+- Run: `python3 claw_api_manager_central.py fix`
+- Restart gateway: `openclaw gateway restart`
+
+**Issue: Key rotation not working**
+- Check: `config/openrouter_keys.json` exists
+- Verify: All keys have `enabled: true`
+- Check logs: `~/.openclaw/logs/gateway.log`
+
+---
+
+## 中文
+
+### 概述
+
+ClawAPI Manager 是 OpenClaw 原生的 API 管理和成本优化工具。通过智能路由自动将简单任务分配给免费模型，节省 30-90% 的 API 成本。
+
+### 功能
+
+- **多 Provider 管理**：管理 OpenAI、Anthropic、Google 等 40+ 家 API 密钥
+- **成本追踪**：实时监控 API 使用和花费
+- **智能路由**：自动将任务路由到性价比最高的模型
+- **密钥健康监控**：检测过期、限流或无效的密钥
+- **配置验证**：检测并自动修复配置问题
+- **预算告警**：多渠道通知（Telegram、Discord、Slack、飞书、QQ）
+- **自动故障转移**：Round-robin 密钥轮换 + 健康检查
+
+### 使用方法
+
+#### 1. 安装
 
 ```bash
-# Route a task (auto-selects model)
-python3 lib/task_delegation.py route "search weather"
-
-# Check if free model should be used
-python3 lib/model_router.py check "simple task"
-
-# Get next available model
-python3 lib/model_router.py next current_model
+cd ~/.openclaw/workspace/skills
+git clone https://github.com/2233admin/clawapi-manager.git
+cd clawapi-manager
+pip install -r requirements.txt
 ```
 
-### Alert Testing
+#### 2. 基本命令
 
 ```bash
-# Test all notification channels
-python3 lib/notifier.py test
+# 列出所有 providers
+python3 claw_api_manager_central.py list
 
-# Send custom message
-python3 lib/notifier.py send "System alert message"
+# 验证配置
+python3 claw_api_manager_central.py validate
+
+# 自动修复配置问题
+python3 claw_api_manager_central.py fix
+
+# 更新 API Key
+python3 claw_api_manager_central.py update provider-name new-key
+
+# 添加新 provider
+python3 claw_api_manager_central.py add provider-name https://api.example.com sk-key anthropic-messages
 ```
 
-## Cron Integration
+#### 3. 配置
 
-Add to `/etc/cron.d/clawapi-manager`:
+```bash
+# 创建示例配置
+cp config/managed_keys_central.json.example config/managed_keys_central.json
+cp config/openrouter_keys.json.example config/openrouter_keys.json
 
-```cron
-# Cost report at 1 AM daily
-0 1 * * * root cd /path/to/clawapi-manager && python3 lib/daily_report.py >> /var/log/clawapi.log 2>&1
-
-# Health check every 15 minutes
-*/15 * * * * root cd /path/to/clawapi-manager && python3 lib/cost_monitor.py health >> /var/log/clawapi.log 2>&1
+# 编辑你的密钥
+nano config/managed_keys_central.json
 ```
 
-## Cost Optimization Guide
+### 使用示例
 
-### How It Works
-
-1. **Task Analysis**: When a task is submitted, the system analyzes its complexity based on keywords
-2. **Model Selection**: 
-   - Simple tasks (search, weather, translate) → Free models via OpenRouter
-   - Medium tasks → Cost-effective models (Flash, Mini)
-   - Complex tasks → Premium models (Opus, GPT-4)
-3. **Execution**: Task is delegated to the selected model
-
-### Free Models Available
-
-| Model | Provider | Context |
-|-------|----------|---------|
-| Qwen 2.5 0.5B | OpenRouter | 32K |
-| Llama 3.2 1B | OpenRouter | 128K |
-| Gemini Flash | Google | 1M |
-
-### Savings Estimate
-
-- **Simple tasks**: 100% savings (free models)
-- **Medium tasks**: 50-70% savings (Flash vs Opus)
-- **Overall**: 30-90% cost reduction depending on task mix
-
-## Requirements
-
-- Python 3.8+
-- OpenClaw (any recent version)
-- Optional: OpenRouter API key (for free model routing)
-- Optional: Webhook URLs for notifications
-
-## Dependencies
-
+**场景 1：验证配置**
 ```
-requests
-pycryptodome
-python-dotenv
+用户："检查我的 OpenClaw 配置是否正确"
+助手：[运行 validate 命令，报告问题]
 ```
 
-## Security Notes
+**场景 2：自动修复**
+```
+用户："修复我的配置错误"
+助手：[运行 fix 命令，修复常见问题]
+```
 
-- API keys are encrypted at rest using AES-256
-- Never commit keys to version control
-- Use environment variables or secure vaults for production
-- Review `config/notify.json.example` before deployment
+**场景 3：添加 OpenRouter 密钥**
+```
+用户："添加这个 OpenRouter 密钥：sk-or-v1-xxx"
+助手：[添加密钥，配置轮换]
+```
 
-## License
+### 脚本
 
-MIT License - Free and personal use.
+- `claw_api_manager_central.py`：主管理 CLI
+- `lib/config_manager.py`：配置管理核心
+- `lib/key_rotation.py`：自动密钥轮换
+- `lib/cost_monitor.py`：成本追踪和报告
+- `lib/smart_router.py`：智能任务路由
 
-## Related for commercial Projects
+### 限制
 
-- [OpenClaw](https://github.com/openclaw/openclaw) - Core framework
-- [OpenRouter](https://openrouter.ai) - Free model routing
-- [OpenClaw Dashboard](https://github.com/mudrii/openclaw-dashboard) - Web UI alternative
+- 需要 Python 3.8+
+- 仅支持 OpenClaw 部署
+- 配置验证仅覆盖常见问题
+- 智能路由需要 OpenRouter 集成
 
-## Support
+### 故障排除
 
-For issues and feature requests, please open an issue on GitHub.
+**问题："Unknown model" 错误**
+- 运行：`python3 claw_api_manager_central.py validate`
+- 运行：`python3 claw_api_manager_central.py fix`
+- 重启 gateway：`openclaw gateway restart`
 
----
-
-**Version**: 1.0.0  
-**Last Updated**: 2026-03-02
-# ClawAPI Manager - 核心亮点
-
-## 与 OpenClaw Switch 的对比
-
-### OpenClaw Switch
-> "The missing remote control for your AI Agents."
-
-**定位**：模型切换工具
-
-**核心功能**：
-- 🚫 拒绝崩溃：Python 原生解析 JSON
-- 📊 可视化 Failover：展示备份链
-- 🚀 丝滑切换：数字编号快速切换
-- 💓 路由透明：显示心跳和子智能体路由
-- 🛡️ 极致安全：本地运行，Key 脱敏
+**问题：密钥轮换不工作**
+- 检查：`config/openrouter_keys.json` 是否存在
+- 验证：所有密钥都有 `enabled: true`
+- 查看日志：`~/.openclaw/logs/gateway.log`
 
 ---
 
-### ClawAPI Manager
-> "From Cost Optimization to Intelligent Orchestration"
-
-**定位**：完整配置管理平台
-
-## 独特亮点
-
-### 1. 🎯 三合一管理
-**OpenClaw Switch**：只管理模型切换  
-**ClawAPI Manager**：Models + Channels + Skills 统一管理
-
-### 2. 🌐 多界面适配
-**OpenClaw Switch**：只有命令行  
-**ClawAPI Manager**：
-- Textual TUI（SSH/终端）
-- Rich 菜单（受限终端）
-- CLI（脚本）
-- 对话式接口（QQ/飞书）
-
-### 3. 🤖 AI 驱动
-**OpenClaw Switch**：手动输入命令  
-**ClawAPI Manager**：
-- AI 复杂度预测（Qwen 0.5B）
-- 自然语言操作
-- 智能路由（自动选免费模型）
-
-### 4. 🔗 通道管理（独有）
-**OpenClaw Switch**：无  
-**ClawAPI Manager**：
-- QQ、企业微信、飞书、钉钉等通道配置
-- 一键启用/禁用
-- 批量管理
-
-### 5. 📦 任务调度（独有）
-**OpenClaw Switch**：无  
-**ClawAPI Manager**：
-- 多节点负载均衡
-- 任务队列
-- 失败重试
-- 性能追踪
-
-### 6. 💰 成本优化（独有）
-**OpenClaw Switch**：无  
-**ClawAPI Manager**：
-- 智能路由（省钱 30-90%）
-- 成本监控
-- 预算预警
-
----
-
-## 功能对比表
-
-| 特性 | OpenClaw Switch | ClawAPI Manager |
-|------|----------------|-----------------|
-| 定位 | 模型切换工具 | 完整配置管理平台 |
-| 功能范围 | 单一（模型） | 三合一（Models + Channels + Skills） |
-| 界面 | CLI | TUI + Rich + CLI + 对话式 |
-| 智能化 | 无 | AI 预测 + 自动路由 |
-| 成本优化 | 无 | 监控 + 优化 |
-| 多节点协作 | 无 | 任务调度 + 负载均衡 |
-| 通道管理 | 无 | QQ/飞书/企业微信等 |
-| 环境适配 | 终端 | SSH/QQ/飞书/脚本 |
-
----
-
-## 核心差异
-
-**OpenClaw Switch 是螺丝刀，ClawAPI Manager 是瑞士军刀。**
-
-- **OpenClaw Switch**：专注于模型切换，简单高效
-- **ClawAPI Manager**：全方位配置管理，智能协作
-
----
-
-## 适用场景
-
-### 选择 OpenClaw Switch
-- 只需要切换模型
-- 喜欢简单的命令行工具
-- 不需要成本优化和多节点协作
-
-### 选择 ClawAPI Manager
-- 需要管理 Models、Channels、Skills
-- 需要多种界面（TUI/CLI/对话式）
-- 需要成本优化（省钱 30-90%）
-- 需要多节点协作和任务调度
-- 需要在 QQ/飞书等环境中使用
-
----
-
-## 总结
-
-ClawAPI Manager 不只是模型切换工具，而是：
-- ✅ 完整的配置管理平台
-- ✅ 智能的成本优化系统
-- ✅ 强大的多节点协作框架
-- ✅ 灵活的多界面适配方案
-
-**从成本优化到智能编排，一站式解决方案。**
+**📖 详细文档**: [README.md](./README.md)  
+**🐛 问题反馈**: [GitHub Issues](https://github.com/2233admin/clawapi-manager/issues)  
+**🚀 快速开始**: 运行 `python3 claw_api_manager_central.py --help`
