@@ -47,26 +47,34 @@ def main():
         tui.run()
     
     else:
-        # 非交互环境（QQ/飞书）：显示帮助
+        # 非交互环境（QQ/飞书）：对话式接口
+        # 这个模式下，应该由 AI 助手调用，而不是用户直接运行
+        # 返回一个提示，告诉 AI 如何使用
         print("""
-ClawAPI Manager - Configuration Management Tool
+ClawAPI Manager - Conversational Interface
 
-Environment: Non-interactive (QQ/Feishu/etc)
+This tool is designed to be called by AI assistants in chat environments (QQ/Feishu).
 
-Usage:
-  clawapi status              Show configuration status
-  clawapi providers           List all providers
-  clawapi models              List all models
-  clawapi channels            List all channels
+For AI assistants:
+  Use the Python API directly:
   
-  clawapi add-provider <name> <url> <key>
-  clawapi set-primary <model_id>
-  clawapi add-channel <name> <type> <token>
+  from lib.config_manager import ClawAPIConfigManager
+  manager = ClawAPIConfigManager()
+  
+  # List providers
+  providers = manager.list_providers()
+  
+  # List channels
+  channels = manager.list_channels()
+  
+  # Add provider
+  manager.add_provider(name, url, key)
+  
+  # Set primary model
+  manager.set_primary_model(model_id)
 
 For interactive UI, run from SSH terminal:
-  ssh user@host
-  cd ~/.openclaw/workspace/skills/clawapi-manager
-  python3 clawapi-ui.py
+  python3 clawapi-tui.py
 """)
 
 if __name__ == "__main__":
