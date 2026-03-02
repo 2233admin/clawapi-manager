@@ -346,3 +346,16 @@ ClawAPI Manager 不只是模型切换工具，而是：
 - ✅ 灵活的多界面适配方案
 
 **从成本优化到智能编排，一站式解决方案。**
+
+---
+
+## 故障排查
+
+遇到问题？查看 [故障排查指南](TROUBLESHOOTING.md)
+
+常见问题：
+- [错误码对照表](TROUBLESHOOTING.md#常见错误码)
+- [协议不匹配](TROUBLESHOOTING.md#1-协议不匹配)
+- [配置文件损坏](TROUBLESHOOTING.md#2-配置文件损坏)
+- [API Key 失效](TROUBLESHOOTING.md#3-api-key-失效)
+
