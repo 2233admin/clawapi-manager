@@ -1,7 +1,7 @@
 ---
 name: ClawAPI Manager
 slug: clawapi-manager
-version: 1.1.0
+version: 1.1.1
 author: 2233admin
 description: OpenClaw-native API management and cost optimization. Multi-provider key management, real-time monitoring, smart routing, and automated failover.
 tags:
