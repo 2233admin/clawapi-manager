@@ -66,21 +66,28 @@ def save_config(config):
         json.dump(config, f, indent=2)
 
 def analyze_task(task_description):
-    """分析任务复杂度"""
-    config = load_config()
-    simple = config['thresholds']['simple_signals']
-    complex = config['thresholds']['complex_signals']
-    
-    task_lower = task_description.lower()
-    
-    # 简单任务
-    if any(s in task_lower for s in simple):
-        return "free"
-    # 复杂任务
-    if any(c in task_lower for c in complex):
-        return "expensive"
-    # 默认中等
-    return "medium"
+    """分析任务复杂度（AI 预测）"""
+    try:
+        # 尝试使用 AI 预测
+        from ai_complexity_predictor import AIComplexityPredictor
+        predictor = AIComplexityPredictor()
+        return predictor.predict_complexity(task_description)
+    except Exception as e:
+        # Fallback to keyword matching
+        config = load_config()
+        simple = config['thresholds']['simple_signals']
+        complex = config['thresholds']['complex_signals']
+        
+        task_lower = task_description.lower()
+        
+        # 简单任务
+        if any(s in task_lower for s in simple):
+            return "free"
+        # 复杂任务
+        if any(c in task_lower for c in complex):
+            return "expensive"
+        # 默认中等
+        return "medium"
 
 def get_model_for_task(task_description):
     """获取适合任务的模型"""
