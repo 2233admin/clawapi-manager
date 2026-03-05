@@ -98,17 +98,34 @@ def analyze_complexity(task: str) -> str:
 
 
 def get_model_for_task(task: str) -> str:
-    """获取最适合任务的模型（成本优先）"""
+    """获取最适合任务的模型（成本优先）
+    免费任务自动走 OpenRouter 负载均衡
+    """
     complexity = analyze_complexity(task)
+
+    if complexity == "free":
+        # 优先用 OpenRouter Hub 负载均衡
+        model = get_free_model()
+        if model:
+            return model
+
     config = load_config()
     tiers = config.get('model_tiers', DEFAULT_MODEL_TIERS)
-
     models = tiers.get(complexity, tiers.get('medium', []))
     return models[0] if models else "minimax/MiniMax-M2.5"
 
 
-def get_free_model() -> str:
-    """获取免费模型"""
+def get_free_model(strategy: str = 'weighted') -> str:
+    """获取免费模型（优先走 OpenRouter 负载均衡）"""
+    try:
+        from lib.openrouter_hub import OpenRouterHub
+        hub = OpenRouterHub()
+        model = hub.get_model(strategy)
+        if model:
+            return model
+    except ImportError:
+        pass
+
     config = load_config()
     free = config.get('model_tiers', {}).get('free', [])
     return free[0] if free else "qwen/qwen-2.5-0.5b-instruct"
