@@ -261,6 +261,38 @@ See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for:
 
 <br>
 
+## `>_ Roadmap: Claw API Hub`
+
+> [Project Board](https://github.com/orgs/CicadaRelay/projects/1) ～ tracking all tasks
+
+### Phase 1: CLI-First (March 2026)
+| # | Task | Status |
+|---|------|--------|
+| [#1](../../issues/1) | typer CLI 统一入口 (`claw hub status/keys/cost/route`) | 🔲 Todo |
+| [#2](../../issues/2) | 统一配置管理 (`~/.claw/config.toml`) | 🔲 Todo |
+
+### Phase 2: Gateway (March–April 2026)
+| # | Task | Status |
+|---|------|--------|
+| [#3](../../issues/3) | OpenAI-compatible HTTP proxy (`/v1/chat/completions`) | 🔲 Todo |
+| [#4](../../issues/4) | 流式响应 + SSE 透传 | 🔲 Todo |
+| [#5](../../issues/5) | 熔断器 + 自动降级链 (Claude → DeepSeek → Doubao → Ollama) | 🔲 Todo |
+| [#7](../../issues/7) | 用量仪表盘 + 超预算报警 | 🔲 Todo |
+
+### Phase 3: Mesh (April 2026)
+| # | Task | Status |
+|---|------|--------|
+| [#6](../../issues/6) | mesh_bridge 集群路由共享 (Redis 同步) | 🔲 Todo |
+
+### Vision
+```
+密钥管理器  ──→  统一 AI Gateway  ──→  分布式路由集群
+ (v1.x)          (v2.0)               (v3.0)
+```
+> Goal: 所有 AI 调用的唯一出口，CLI-first，agent-native。
+
+<br>
+
 ## `>_ Links`
 
 <p>
